@@ -88,7 +88,7 @@ crypto_history <- function(coin = NULL, limit = NULL, start_date = NULL, end_dat
     loop_data[[i]] <- scraper(to_scrape$attributes[i], to_scrape$slug[i], sleep)
   }
   
-  results <- do.call(rbind, loop_data) %>% tibble::as.tibble()
+  results <- do.call(rbind, loop_data) %>% tibble::as_tibble()
   
   if (length(results) == 0L)
     stop("No data currently exists for this crypto currency.", call. = FALSE)

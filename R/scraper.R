@@ -33,28 +33,28 @@ scraper <- function(attributes, slug, sleep = NULL) {
   .            <- "."
   history_url  <- as.character(attributes)
   coin_slug    <- as.character(slug)
-  rate_msg     <- "Rate limit hit. Sleeping for 60 seconds."
-  if (!is.null(sleep)) {Sys.sleep(sleep)}
-
+  if (!is.null(sleep)) Sys.sleep(sleep)
+  
   page <- tryCatch(
-    xml2::read_html(history_url, handle = curl::new_handle("useragent" = "Mozilla/5.0")),
+    xml2::read_html(history_url,
+                    handle = curl::new_handle("useragent" = "Mozilla/5.0")),
     error = function(e) e)
-
+  
   if (inherits(page, "error")) {
     closeAllConnections()
     message("\n")
-    message(cli::cat_bullet(rate_msg, bullet = "warning", bullet_col = "red"), appendLF = TRUE)
+    message(cli::cat_bullet("Rate limit hit. Sleeping for 60 seconds.", bullet = "warning", bullet_col = "red"), appendLF = TRUE)
     Sys.sleep(65)
-    page <- xml2::read_html(history_url, handle = curl::new_handle("useragent" = "Mozilla/5.0"))
+    page <- xml2::read_html(history_url,
+                            handle = curl::new_handle("useragent" = "Mozilla/5.0"))
   }
-
-  table <- page %>% rvest::html_node("#__NEXT_DATA__") %>%
-    rvest::html_text() %>%
-    jsonlite::fromJSON()
-
-  scraper <- table$props$initialState$cryptocurrency$ohlcvHistorical[[1]]$quotes$quote$USD %>%
-    tibble::as_tibble() %>%
+  
+  table   <- rvest::html_nodes(page, css = "table") %>% .[3] %>%
+    rvest::html_table(fill = TRUE) %>%
+    replace(!nzchar(.), NA)
+  
+  scraper <- table[[1]] %>% tibble::as.tibble() %>%
     dplyr::mutate(slug = coin_slug)
-
+  
   return(scraper)
 }

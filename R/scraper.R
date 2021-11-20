@@ -53,7 +53,7 @@ scraper <- function(attributes, slug, sleep = NULL) {
     rvest::html_table(fill = TRUE) %>%
     replace(!nzchar(.), NA)
   
-  scraper <- table[[1]] %>% tibble::as.tibble() %>%
+  scraper <- table[[1]] %>% tibble::as_tibble() %>%
     dplyr::mutate(slug = coin_slug)
   
   return(scraper)
